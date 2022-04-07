@@ -1,0 +1,63 @@
+.play{
+    position:absolute;
+    width:100vw;
+    min-height:300px;
+    overflow:hidden;
+    border:2px solid black;
+  }
+
+  .btn-circle.btn-xl {
+    width: 30vh;
+    height: 30vh;
+    padding: 10px 16px;
+    border-radius: 30vh;
+    font-size: 4vh;
+    line-height: 1.33;
+    box-shadow: 0 0 0 0.25rem rgb(66 70 73 / 0%);
+}
+
+.btn-circle.btn-xl:hover {
+    width: 30vh;
+    height: 30vh;
+    padding: 10px 16px;
+    border-radius: 30vh;
+    font-size: 4vh;
+    line-height: 1.33;
+    box-shadow: 0 0 0 0.25rem rgb(135 135 135);
+}
+.timesignature {
+    text-align: center;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 10vh;
+}
+
+.container{
+    text-align: center;
+}
+.placeholder{
+    height: 40vh;
+    width: 100%;
+    color: transparent;
+}
+
+.body_white{
+    background-color: white;
+    color:black;
+}
+
+.body_black{
+    background-color: black;
+    color:white;
+}
+
+.stop{
+    position: absolute;
+bottom: 0;
+right: 0;
+}
+
+.playbutton{
+    font-size: 10vh;
+    color: white;
+    
+}
