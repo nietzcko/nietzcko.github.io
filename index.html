@@ -19,9 +19,17 @@
     if(this.currentTime > this.duration - buffer){
         this.currentTime = 0
         this.play()
-        audio68.play();
-    }
-});
+        
+    }});
+
+    audio68.addEventListener('timeupdate', function(){
+    var buffer = .22
+    if(this.currentTime > this.duration - buffer){
+        this.currentTime = 0
+        this.play()
+        
+    }});
+
 
  function play() {
   
