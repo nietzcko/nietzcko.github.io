@@ -1,579 +1,94 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Web Drummer Groove Generator</title>
-    <style>
-        :root {
-            --bg-color: #1a1a1a;
-            --pad-bg: #2a2a2a;
-            --accent: #f2c51f; /* Garageband sárga */
-            --text-color: #888;
-            --step-bg: #333;
-            --step-active: #f2c51f;
-            --step-current: #fff;
-        }
+  <meta charset="UTF-8" />
+  <title>nietzcko · Projects</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 40px;
+      color: #222;
+    }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: pan-y; /* Csak függőleges görgetés */
-        }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
 
-        h1 {
-            color: var(--accent);
-            font-size: 20px;
-            margin-bottom: 20px;
-            font-weight: 500;
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
+    h1 {
+      margin-bottom: 24px;
+      font-size: 28px;
+    }
 
-        .version {
-            font-size: 12px;
-            color: #666;
-            font-weight: normal;
-        }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
 
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
+    li {
+      background: white;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
 
-        button {
-            background-color: var(--pad-bg);
-            color: var(--accent);
-            border: 1px solid #444;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 16px;
-            cursor: pointer;
-            outline: none;
-        }
+    a {
+      display: block;
+      padding: 16px 20px;
+      text-decoration: none;
+      color: #0066cc;
+      font-size: 18px;
+    }
 
-        button:active {
-            background-color: #444;
-        }
+    a:hover {
+      background: #f0f6ff;
+    }
 
-        .bpm-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        input[type=range] {
-            accent-color: var(--accent);
-            width: 100px;
-        }
-
-        /* XY Pad */
-        .xy-wrapper {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin-bottom: 30px;
-        }
-
-        .label {
-            position: absolute;
-            font-size: 12px;
-            letter-spacing: 1px;
-            pointer-events: none;
-        }
-        .label.top { top: -20px; left: 50%; transform: translateX(-50%); }
-        .label.bottom { bottom: -20px; left: 50%; transform: translateX(-50%); }
-        .label.left { left: -50px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-        .label.right { right: -60px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-
-        .xy-pad {
-            width: 100%;
-            height: 100%;
-            background-color: var(--pad-bg);
-            border: 2px solid #333;
-            border-radius: 20px;
-            position: relative;
-            touch-action: none; /* Érintés letiltása a böngésző görgetéséhez */
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        .puck {
-            width: 30px;
-            height: 30px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            pointer-events: none;
-        }
-
-        /* Sequencer */
-        .sequencer {
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .row-label {
-            width: 40px;
-            font-size: 12px;
-            color: #aaa;
-            text-align: right;
-            padding-right: 10px;
-        }
-
-        .steps {
-            display: flex;
-            flex: 1;
-            justify-content: space-between;
-        }
-
-        .step {
-            width: 15px;
-            height: 25px;
-            background-color: var(--step-bg);
-            border-radius: 3px;
-            transition: background-color 0.1s, opacity 0.1s;
-        }
-
-        .step.active {
-            background-color: var(--step-active);
-        }
-
-        .step.playing {
-            background-color: var(--step-current) !important;
-            box-shadow: 0 0 10px #fff;
-        }
-
-        .download-btn {
-            background-color: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            width: 100%;
-            max-width: 400px;
-        }
-
-    </style>
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Projects</h1>
 
-    <h1>Groove Generator <span class="version">v1.1</span></h1>
+    <ul>
+      <li>
+        <a href="https://nietzcko.github.io/fitviz">
+          FitViz
+        </a>
+      </li>
+      <li>
+        <a href="https://nietzcko.github.io/measureme">
+          MeasureMe
+        </a>
+      </li>
+      <li>
+        <a href="https://nietzcko.github.io/trials">
+          Trials
+        </a>
+      </li>
+       <li>
+        <a href="https://nietzcko.github.io/hexdrive">
+          HEX Racing
+        </a>
+      </li>
+       <li>
+        <a href="https://nietzcko.github.io/drumgen">
+          Drum groove generator
+        </a>
+      </li>
+    </ul>
 
-    <div class="controls">
-        <button id="playBtn">Play</button>
-        <div class="bpm-container">
-            <span id="bpmDisplay">120 BPM</span>
-            <input type="range" id="bpmSlider" min="60" max="180" value="120">
-        </div>
-    </div>
-
-    <div class="xy-wrapper">
-        <span class="label top">Loud</span>
-        <span class="label bottom">Soft</span>
-        <span class="label left">Simple</span>
-        <span class="label right">Complex</span>
-        <div class="xy-pad" id="xyPad">
-            <div class="puck" id="puck"></div>
-        </div>
-    </div>
-
-    <div class="sequencer" id="sequencer">
-        </div>
-
-    <button id="downloadMidiBtn" class="download-btn">⬇ MIDI Fájl Letöltése</button>
-
-    <script>
-        // --- ÁLLAPOT ÉS VÁLTOZÓK ---
-        let isPlaying = false;
-        let bpm = 120;
-        let complexity = 0.5;
-        let loudness = 0.5;
-        
-        let currentStep = 0;
-        let nextNoteTime = 0;
-        let lookahead = 25; // ms
-        let scheduleAheadTime = 0.1; // s
-        let timerID;
-
-        const instruments = ['HiHat', 'Snare', 'Kick'];
-        let groove = {
-            'HiHat': new Array(16).fill(0),
-            'Snare': new Array(16).fill(0),
-            'Kick': new Array(16).fill(0)
-        };
-
-        // --- WEB AUDIO API (Szintetizátorok) ---
-        let audioCtx;
-
-        function initAudio() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function playSound(inst, velocity, time) {
-            if (!audioCtx) return;
-            const gainNode = audioCtx.createGain();
-            const vol = (velocity / 127) * loudness;
-            gainNode.gain.setValueAtTime(vol, time);
-            gainNode.connect(audioCtx.destination);
-
-            if (inst === 'Kick') {
-                const osc = audioCtx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(150, time);
-                osc.frequency.exponentialRampToValueAtTime(0.001, time + 0.5);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
-                osc.connect(gainNode);
-                osc.start(time);
-                osc.stop(time + 0.5);
-            } else if (inst === 'Snare') {
-                const osc = audioCtx.createOscillator();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(200, time);
-                const noise = audioCtx.createBufferSource();
-                const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
-                const output = buffer.getChannelData(0);
-                for (let i = 0; i < output.length; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                noise.buffer = buffer;
-                
-                const noiseFilter = audioCtx.createBiquadFilter();
-                noiseFilter.type = 'highpass';
-                noiseFilter.frequency.value = 1000;
-                noise.connect(noiseFilter);
-                noiseFilter.connect(gainNode);
-                
-                osc.connect(gainNode);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
-                
-                osc.start(time);
-                noise.start(time);
-                osc.stop(time + 0.2);
-            } else if (inst === 'HiHat') {
-                const noise = audioCtx.createBufferSource();
-                const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
-                const output = buffer.getChannelData(0);
-                for (let i = 0; i < output.length; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                noise.buffer = buffer;
-                
-                const bandpass = audioCtx.createBiquadFilter();
-                bandpass.type = 'bandpass';
-                bandpass.frequency.value = 8000;
-                
-                noise.connect(bandpass);
-                bandpass.connect(gainNode);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-                
-                noise.start(time);
-            }
-        }
-
-        // --- ALGORITMUS: GROOVE GENERÁLÁS ---
-        function generateGroove() {
-            for(let inst in groove) groove[inst].fill(0);
-
-            let baseVel = Math.floor(60 + (loudness * 67));
-            let ghostVel = Math.floor(baseVel * 0.5);
-
-            // KICK generálás
-            groove['Kick'][0] = baseVel;
-            if (complexity > 0.1) groove['Kick'][8] = baseVel;
-            if (complexity > 0.4) groove['Kick'][10] = ghostVel;
-            if (complexity > 0.7) {
-                groove['Kick'][14] = ghostVel;
-                groove['Kick'][3] = ghostVel;
-            }
-            if (complexity > 0.9) groove['Kick'][15] = ghostVel;
-
-            // SNARE generálás
-            if (complexity > 0.05) {
-                groove['Snare'][4] = baseVel;
-                groove['Snare'][12] = baseVel;
-            }
-            if (complexity > 0.5) groove['Snare'][7] = ghostVel;
-            if (complexity > 0.8) groove['Snare'][15] = ghostVel; 
-            if (complexity > 0.95) groove['Snare'][9] = ghostVel;
-
-            // HIHAT generálás
-            if (complexity < 0.3) {
-                [0, 4, 8, 12].forEach(i => groove['HiHat'][i] = baseVel);
-            } else if (complexity < 0.7) {
-                for(let i=0; i<16; i+=2) {
-                    groove['HiHat'][i] = (i % 4 === 0) ? baseVel : ghostVel;
-                }
-            } else {
-                for(let i=0; i<16; i++) {
-                    if (i % 4 === 0) groove['HiHat'][i] = baseVel;
-                    else if (i % 2 === 0) groove['HiHat'][i] = ghostVel + 10;
-                    else groove['HiHat'][i] = ghostVel - 10;
-                }
-            }
-
-            updateSequencerVisuals();
-        }
-
-        // --- UI FRISSÍTÉSEK (V1.1: Optimalizált DOM kezelés) ---
-        const seqDiv = document.getElementById('sequencer');
-        
-        function initSequencer() {
-            seqDiv.innerHTML = '';
-            instruments.forEach(inst => {
-                const row = document.createElement('div');
-                row.className = 'row';
-                
-                const label = document.createElement('div');
-                label.className = 'row-label';
-                label.innerText = inst === 'HiHat' ? 'HH' : (inst === 'Snare' ? 'SN' : 'KD');
-                row.appendChild(label);
-
-                const stepsDiv = document.createElement('div');
-                stepsDiv.className = 'steps';
-                
-                for(let i=0; i<16; i++) {
-                    const step = document.createElement('div');
-                    step.className = 'step';
-                    step.id = `step-${inst}-${i}`;
-                    stepsDiv.appendChild(step);
-                }
-                row.appendChild(stepsDiv);
-                seqDiv.appendChild(row);
-            });
-        }
-
-        function updateSequencerVisuals() {
-            instruments.forEach(inst => {
-                for(let i=0; i<16; i++) {
-                    const step = document.getElementById(`step-${inst}-${i}`);
-                    if (step) {
-                        if (groove[inst][i] > 0) {
-                            step.classList.add('active');
-                            step.style.opacity = Math.max(0.3, groove[inst][i] / 127);
-                        } else {
-                            step.classList.remove('active');
-                            step.style.opacity = 1;
-                        }
-                    }
-                }
-            });
-        }
-
-        function highlightStep(stepIndex) {
-            document.querySelectorAll('.step').forEach(el => el.classList.remove('playing'));
-            instruments.forEach(inst => {
-                const el = document.getElementById(`step-${inst}-${stepIndex}`);
-                if (el) el.classList.add('playing');
-            });
-        }
-
-        // --- SZEKVENSER LOGIKA ---
-        function nextNote() {
-            const secondsPerBeat = 60.0 / bpm;
-            nextNoteTime += 0.25 * secondsPerBeat;
-            currentStep++;
-            if (currentStep === 16) {
-                currentStep = 0;
-            }
-        }
-
-        function scheduleNote(stepNumber, time) {
-            setTimeout(() => {
-                if (isPlaying) highlightStep(stepNumber);
-            }, (time - audioCtx.currentTime) * 1000);
-
-            instruments.forEach(inst => {
-                const vel = groove[inst][stepNumber];
-                if (vel > 0) {
-                    playSound(inst, vel, time);
-                }
-            });
-        }
-
-        function scheduler() {
-            while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
-                scheduleNote(currentStep, nextNoteTime);
-                nextNote();
-            }
-            timerID = setTimeout(scheduler, lookahead);
-        }
-
-        // --- ESEMÉNYKEZELŐK ---
-        const playBtn = document.getElementById('playBtn');
-        playBtn.addEventListener('click', () => {
-            initAudio();
-            if (isPlaying) {
-                isPlaying = false;
-                playBtn.innerText = "Play";
-                playBtn.style.color = "var(--accent)";
-                clearTimeout(timerID);
-                document.querySelectorAll('.step').forEach(el => el.classList.remove('playing'));
-            } else {
-                isPlaying = true;
-                playBtn.innerText = "Stop";
-                playBtn.style.color = "white";
-                currentStep = 0;
-                nextNoteTime = audioCtx.currentTime + 0.05;
-                scheduler();
-            }
-        });
-
-        const bpmSlider = document.getElementById('bpmSlider');
-        const bpmDisplay = document.getElementById('bpmDisplay');
-        bpmSlider.addEventListener('input', (e) => {
-            bpm = e.target.value;
-            bpmDisplay.innerText = `${bpm} BPM`;
-        });
-
-        const xyPad = document.getElementById('xyPad');
-        const puck = document.getElementById('puck');
-
-        function updateXY(x, y) {
-            const rect = xyPad.getBoundingClientRect();
-            let px = Math.max(0, Math.min(x - rect.left, rect.width));
-            let py = Math.max(0, Math.min(y - rect.top, rect.height));
-
-            puck.style.left = `${px}px`;
-            puck.style.top = `${py}px`;
-
-            complexity = px / rect.width;
-            loudness = 1.0 - (py / rect.height);
-            
-            generateGroove();
-        }
-
-        function handlePadMove(e) {
-            if (e.touches) {
-                e.preventDefault();
-                updateXY(e.touches[0].clientX, e.touches[0].clientY);
-            } else {
-                if (e.buttons === 1) {
-                    updateXY(e.clientX, e.clientY);
-                }
-            }
-        }
-
-        xyPad.addEventListener('mousedown', (e) => updateXY(e.clientX, e.clientY));
-        xyPad.addEventListener('mousemove', handlePadMove);
-        xyPad.addEventListener('touchstart', (e) => { e.preventDefault(); updateXY(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
-        xyPad.addEventListener('touchmove', handlePadMove, {passive: false});
-
-        // --- MIDI EXPORT ---
-        function toVLQ(n) {
-            let buffer = [n & 0x7F];
-            while ((n >>= 7)) { buffer.unshift((n & 0x7F) | 0x80); }
-            return buffer;
-        }
-
-        document.getElementById('downloadMidiBtn').addEventListener('click', () => {
-            const TICKS_PER_BEAT = 120;
-            const TICKS_PER_16TH = TICKS_PER_BEAT / 4;
-            const midiNotes = { 'Kick': 36, 'Snare': 38, 'HiHat': 42 };
-
-            let trackEvents = [];
-            const microsecondsPerBeat = Math.round(60000000 / bpm);
-            trackEvents.push(0x00, 0xFF, 0x51, 0x03, 
-                (microsecondsPerBeat >> 16) & 0xFF, 
-                (microsecondsPerBeat >> 8) & 0xFF, 
-                microsecondsPerBeat & 0xFF);
-
-            let eventsList = [];
-            for (let step = 0; step < 16; step++) {
-                instruments.forEach(inst => {
-                    const vel = groove[inst][step];
-                    if (vel > 0) {
-                        eventsList.push({ step: step, type: 0x99, note: midiNotes[inst], vel: vel });
-                        eventsList.push({ step: step + 0.9, type: 0x89, note: midiNotes[inst], vel: 0 });
-                    }
-                });
-            }
-
-            eventsList.sort((a, b) => a.step - b.step);
-
-            let lastAbsoluteTick = 0;
-            eventsList.forEach(ev => {
-                let absoluteTick = Math.round(ev.step * TICKS_PER_16TH);
-                let deltaTick = absoluteTick - lastAbsoluteTick;
-                
-                trackEvents.push(...toVLQ(deltaTick));
-                trackEvents.push(ev.type, ev.note, ev.vel);
-
-                lastAbsoluteTick = absoluteTick;
-            });
-
-            trackEvents.push(0x00, 0xFF, 0x2F, 0x00);
-
-            const trackLen = trackEvents.length;
-            const trackHeader = [
-                0x4D, 0x54, 0x72, 0x6B,
-                (trackLen >> 24) & 0xFF, (trackLen >> 16) & 0xFF, (trackLen >> 8) & 0xFF, trackLen & 0xFF
-            ];
-
-            const header = [
-                0x4D, 0x54, 0x68, 0x64,
-                0x00, 0x00, 0x00, 0x06,
-                0x00, 0x00,
-                0x00, 0x01,
-                (TICKS_PER_BEAT >> 8) & 0xFF, TICKS_PER_BEAT & 0xFF
-            ];
-
-            const midiBytes = new Uint8Array([...header, ...trackHeader, ...trackEvents]);
-            
-            const blob = new Blob([midiBytes], { type: 'audio/midi' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `groove_${bpm}bpm.mid`;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
-        });
-
-        // Inicializálás
-        initSequencer(); // A rács létrehozása
-        generateGroove(); // Színek/minták betöltése
-        
-        setTimeout(() => {
-            const rect = xyPad.getBoundingClientRect();
-            puck.style.left = `${rect.width * 0.5}px`;
-            puck.style.top = `${rect.height * 0.5}px`;
-        }, 100);
-
-    </script>
+    <footer>
+      © 2026 · nietzcko
+    </footer>
+  </div>
 </body>
 </html>
